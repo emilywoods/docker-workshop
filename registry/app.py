@@ -1,6 +1,6 @@
 from builtins import KeyError
 
-from flask import Flask, request
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
@@ -9,7 +9,12 @@ REGISTRY = {}
 
 @app.route("/")
 def homepage():
-    return "Hello World!"
+    return render_template("index.html")
+
+
+@app.route("/containers")
+def containers():
+    return jsonify(REGISTRY)
 
 
 @app.route("/register", methods=["POST"])
@@ -27,7 +32,7 @@ def register():
 @app.route("/deregister", methods=["GET", "POST"])
 def deregister():
     try:
-        REGISTRY.pop("request.remote_addr")
+        REGISTRY.pop(request.remote_addr)
         return "Deregistered {}".format(request.remote_addr)
     except KeyError as keyerror:
         return "{} has no registered containers.".format(request.remote_addr), 404
