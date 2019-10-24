@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="pyladies-devops-workshop",
-    install_requires=["flask==1.1.1"],
+    install_requires=["apscheduler==3.6.1", "flask==1.1.1", "requests==2.22.0"],
     python_requires=">=3.6",
     classifiers=[
         "Development Status :: 1 - Beta",
