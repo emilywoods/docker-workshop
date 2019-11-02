@@ -53,14 +53,14 @@ Here is an example request to ``register``::
 Deregister
 ----------
 
-To de-register an application and stop receiving telemetry data, the user sends a request to the
+To de-register an application and stop receiving telemetry data, the user sends a ``POST`` request to the
 ``deregister`` endpoint. This will drop the user's information and they will no longer be sent telemetry
 data by the registry service.
 
 Here is an example request to ``deregister``::
 
   >>> import requests
-  >>> requests.get("http://127.0.0.1:5000/deregister")
+  >>> requests.get("http://127.0.0.1:5000/deregister", json={"username": "Emily 👋", "port": 65432})
 
 Receiving telemetry data
 ------------------------

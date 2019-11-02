@@ -6,14 +6,26 @@ class Dashboard {
 
     create_dashboard(dat) {
        var html = ""
-       for (var ip in dat) {
-        var has_errors = dat[ip].error > 0;
+       for (var username in dat) {
+
+        var num_of_containers = Object.keys(dat[username]["containers"]).length
+        var success = 0
+        var error = 0
+
+        for (var container in dat[username]["containers"]) {
+            success += dat[username]["containers"][container]["success"]
+            error += dat[username]["containers"][container]["error"]
+        }
+
+        var has_errors = error > 0;
+        console.log(success)
+        console.log(error)
         var domString = `
         <div class="entry">
-            <div class="user">${dat[ip].user}</div>
-            <div class="success">Messages Sent: ${dat[ip].success}</div>
-            <div class="error has-errors-${has_errors}">Errors: ${dat[ip].error}</div>
-            <div class="address">${ip}:${dat[ip].port}</div>
+            <div class="user">${username}</div>
+            <div class="containers">Registered Containers: ${num_of_containers}</div>
+            <div class="success">Messages Sent: ${success}</div>
+            <div class="error has-errors-${has_errors}">Errors: ${error}</div>
         </div>`
         html += domString;
        }
