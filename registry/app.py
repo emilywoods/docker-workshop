@@ -15,22 +15,29 @@ logging.basicConfig(level=logging.INFO)
 
 
 def send_telemetry_data():
-    """ Post telemetry data to registered users """
+    """ Send telemetry data to registered users
+
+    Iterates over the registered users, and POSTs telemetry data to them.
+
+    This is run as a job by the ``BackroundScheduler`` on a specified interval.
+    """
 
     telemetry = _generate_telemetry_data()
-    for registered_ip, meta in REGISTRY.items():
-        url = "http://{}:{}".format(registered_ip, meta["port"])
+    for registered_ip, user in REGISTRY.items():
+        url = "http://{}:{}".format(registered_ip, user["port"])
         try:
             requests.post(url, json=telemetry)
         except requests.exceptions.RequestException as request_exception:
             logging.warning(
                 "Error posting to {} at {}, caused by {}".format(
-                    meta["user"], url, request_exception
+                    user["user"], url, request_exception
                 )
             )
 
 
 def _generate_telemetry_data():
+    """ Generate randomised telemetry data """
+
     return {
         "humidity": float(random.randrange(60, 85)),
         "temperature": float(random.randrange(16.0, 25.0)),
@@ -55,6 +62,16 @@ def containers():
 
 @app.route("/register", methods=["POST"])
 def register():
+    """Register a user
+
+    Accepts a POST request with a JSON body containing:
+    {
+      "username": "Pylady A",
+      "port": 65432
+    }
+
+    Adds this user's username, IP and port to the Registry.
+    """
     ip_address = request.remote_addr
     payload = request.get_json(silent=True)
 
@@ -67,6 +84,10 @@ def register():
 
 @app.route("/deregister", methods=["GET", "POST"])
 def deregister():
+    """Deregister a user
+
+    Accepts a GET or POST request and removes the user from the registry.
+    """
     try:
         REGISTRY.pop(request.remote_addr)
         return "Deregistered {}".format(request.remote_addr)
