@@ -6,8 +6,7 @@ from builtins import KeyError
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from flask import Flask, request, jsonify, render_template
-
-import logging
+from flask_expects_json import expects_json
 
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.WARN)
@@ -17,6 +16,28 @@ app = Flask(__name__)
 REGISTRY = {}
 
 logging.basicConfig(level=logging.INFO)
+
+
+PAYLOAD_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["port", "username"],
+    "properties": {
+        "port": {
+            "$id": "#/properties/port",
+            "type": "integer",
+            "title": "The port of the registered container",
+            "examples": [42049],
+        },
+        "username": {
+            "$id": "#/properties/username",
+            "type": "string",
+            "title": "The username that the registered container belongs to",
+            "examples": ["Emily", "Mika", "Super Cool Pylady"],
+            "pattern": "^(.*)$",
+        },
+    },
+}
 
 
 def send_telemetry_data():
@@ -69,6 +90,7 @@ def containers():
 
 
 @app.route("/register", methods=["POST"])
+@expects_json(PAYLOAD_SCHEMA)
 def register():
     """Register a container
 
@@ -99,6 +121,7 @@ def register():
 
 
 @app.route("/deregister", methods=["POST"])
+@expects_json(PAYLOAD_SCHEMA)
 def deregister():
     """Deregister a container
 
