@@ -7,9 +7,12 @@ class Dashboard {
     create_dashboard(dat) {
        var html = ""
        for (var ip in dat) {
+        var has_errors = dat[ip].error > 0;
         var domString = `
         <div class="entry">
             <div class="user">${dat[ip].user}</div>
+            <div class="success">Messages Sent: ${dat[ip].success}</div>
+            <div class="error has-errors-${has_errors}">Errors: ${dat[ip].error}</div>
             <div class="address">${ip}:${dat[ip].port}</div>
         </div>`
         html += domString;
