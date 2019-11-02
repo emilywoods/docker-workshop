@@ -7,6 +7,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from flask import Flask, request, jsonify, render_template
 
+import logging
+
+log = logging.getLogger("werkzeug")
+log.setLevel(logging.WARN)
+
 app = Flask(__name__)
 
 REGISTRY = {}
@@ -23,18 +28,19 @@ def send_telemetry_data():
     """
 
     telemetry = _generate_telemetry_data()
-    for registered_ip, user in REGISTRY.items():
-        url = "http://{}:{}".format(registered_ip, user["port"])
-        try:
-            requests.post(url, json=telemetry, timeout=1)
-            meta["success"] += 1
-        except requests.exceptions.RequestException as request_exception:
-            logging.warning(
-                "Error posting to {} at {}, caused by {}".format(
-                    user["user"], url, request_exception
+    for username in REGISTRY:
+        for container in REGISTRY[username]["containers"]:
+            url = f"http://{container}"
+            try:
+                requests.post(url, json=telemetry, timeout=1)
+                REGISTRY[username]["containers"][container]["success"] += 1
+            except requests.exceptions.RequestException as request_exception:
+                logging.warning(
+                    "Error posting to {} at {}, caused by {}".format(
+                        username, url, request_exception
+                    )
                 )
-            )
-            meta["error"] += 1
+                REGISTRY[username]["containers"][container]["error"] += 1
 
 
 def _generate_telemetry_data():
@@ -64,7 +70,7 @@ def containers():
 
 @app.route("/register", methods=["POST"])
 def register():
-    """Register a user
+    """Register a container
 
     Accepts a POST request with a JSON body containing:
     {
@@ -77,27 +83,47 @@ def register():
     ip_address = request.remote_addr
     payload = request.get_json(silent=True)
 
-    REGISTRY[ip_address] = {
-        "user": payload["username"],
-        "port": payload["port"],
-        "success": 0,
-        "error": 0,
-    }
-    logging.info("registered user {} at: {}".format(payload["username"], ip_address))
+    key = f"{ip_address}:{payload['port']}"
+
+    if payload["username"] not in REGISTRY:
+        REGISTRY[payload["username"]] = {
+            "containers": {key: {"success": 0, "error": 0}}
+        }
+    else:
+        REGISTRY[payload["username"]]["containers"][key] = {"success": 0, "error": 0}
+
+    logging.info("registered user {} at: {}".format(payload["username"], key))
     return "Registering {} with IP Address {} and port {}".format(
         payload["username"], ip_address, payload["port"]
     )
 
 
-@app.route("/deregister", methods=["GET", "POST"])
+@app.route("/deregister", methods=["POST"])
 def deregister():
-    """Deregister a user
+    """Deregister a container
 
-    Accepts a GET or POST request and removes the user from the registry.
+    Accepts a POST request with a JSON body containing:
+    {
+      "username": "Pylady A",
+      "port": 65432
+    }
+
+    Removes the IP and port from the user's registerd containers. If it is the last
+    registered container, it removes the user as well.
     """
+
+    ip_address = request.remote_addr
+    payload = request.get_json(silent=True)
+    username = payload["username"]
+    port = payload["port"]
+
+    key = f"{ip_address}:{port}"
+
     try:
-        REGISTRY.pop(request.remote_addr)
-        return "Deregistered {}".format(request.remote_addr)
+        REGISTRY[username]["containers"].pop(key)
+        if len(REGISTRY[username]["containers"].keys()) == 0:
+            REGISTRY.pop(username)
+        return "Deregistered {}".format(key)
     except KeyError as keyerror:
         return "{} has no registered containers.".format(request.remote_addr), 404
 
