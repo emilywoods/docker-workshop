@@ -26,13 +26,15 @@ def send_telemetry_data():
     for registered_ip, user in REGISTRY.items():
         url = "http://{}:{}".format(registered_ip, user["port"])
         try:
-            requests.post(url, json=telemetry)
+            requests.post(url, json=telemetry, timeout=1)
+            meta["success"] += 1
         except requests.exceptions.RequestException as request_exception:
             logging.warning(
                 "Error posting to {} at {}, caused by {}".format(
                     user["user"], url, request_exception
                 )
             )
+            meta["error"] += 1
 
 
 def _generate_telemetry_data():
@@ -75,7 +77,12 @@ def register():
     ip_address = request.remote_addr
     payload = request.get_json(silent=True)
 
-    REGISTRY[ip_address] = {"user": payload["username"], "port": payload["port"]}
+    REGISTRY[ip_address] = {
+        "user": payload["username"],
+        "port": payload["port"],
+        "success": 0,
+        "error": 0,
+    }
     logging.info("registered user {} at: {}".format(payload["username"], ip_address))
     return "Registering {} with IP Address {} and port {}".format(
         payload["username"], ip_address, payload["port"]

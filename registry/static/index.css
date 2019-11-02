@@ -44,6 +44,7 @@ h1 {
     border: 1px solid white;
     padding: 2em;
     margin: 1em;
+    line-height: 1.2;
 }
 
 .entry .user {
@@ -53,4 +54,9 @@ h1 {
 
 .entry .address {
     opacity: 0.5;
+    margin-top: 0.5em;
+}
+
+.entry .has-errors-true {
+    color: #ff4e4e;
 }
