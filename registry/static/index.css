@@ -45,6 +45,7 @@ h1 {
     padding: 2em;
     margin: 1em;
     line-height: 1.2;
+    max-width: 20em;
 }
 
 .entry .user {
