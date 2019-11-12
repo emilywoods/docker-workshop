@@ -1,8 +1,8 @@
-========
-Registry
-========
+======
+Server
+======
 
-The purpose of this service to send telemetry data to connected applications. Applications
+The purpose of the server to send telemetry data to connected applications. Applications
 can ``register`` and ``deregister``. While registered, telemetry data is sent to the
 applications at the provided port.
 
@@ -55,7 +55,7 @@ Deregister
 
 To de-register an application and stop receiving telemetry data, the user sends a ``POST`` request to the
 ``deregister`` endpoint. This will drop the user's information and they will no longer be sent telemetry
-data by the registry service.
+data by the server.
 
 Here is an example request to ``deregister``::
 
@@ -69,6 +69,6 @@ Once a user is registered, the server will begin to try to send data at a fixed 
 interval to the IP address of the user, at the registered port.
 
 To accept and receive this data, you can follow the instructions of the ``README`` in the
-`listener service`_.
+`client service`_.
 
-.. _listener service: ../listener/README.rst
+.. _client service: ../client/README.rst
