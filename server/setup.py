@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name="pyladies-devops-workshop",
+    name="workshop-server",
     python_requires=">=3.7",
     install_requires=[
         "apscheduler==3.6.1",

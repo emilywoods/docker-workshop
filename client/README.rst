@@ -69,4 +69,4 @@ View the logs of a container::
 
   $ docker logs <CONTAINER-ID>
 
-.. _server README: ../registry/README.rst
+.. _server README: ../server/README.rst
